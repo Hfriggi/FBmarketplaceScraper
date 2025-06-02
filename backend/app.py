@@ -41,11 +41,16 @@ def is_logged_in(driver):
 def scrape():
     data = request.json
     query = data.get('query', '')
-    min_price = data.get('minPrice', '')
+    min_price = data.get('minPrice', '0')
     max_price = data.get('maxPrice', '')
-    days = data.get('daysSinceListed', '')
+    days = data.get('daysSinceListed', '1')
+    radius = data.get('radius', '20')  # valor padrão 20km
 
-    url = f"https://www.facebook.com/marketplace/104032612966151/search?minPrice={min_price}&maxPrice={max_price}&daysSinceListed={days}&query={query}&exact=false"
+    # Monta a URL apenas com os filtros necessários
+    url = f"https://www.facebook.com/marketplace/104032612966151/search?minPrice={min_price}"
+    if max_price:
+        url += f"&maxPrice={max_price}"
+    url += f"&daysSinceListed={days}&query={query}&exact=false"
 
     options = Options()
     options.add_argument("--disable-gpu")
@@ -97,6 +102,39 @@ def scrape():
         print("Acessando Marketplace...")
         driver.get(url)
         time.sleep(5)
+
+        # Seleciona localização e raio
+        print("Abrindo filtro de localização...")
+        try:
+            # Clica no botão de localização
+            location_button = driver.find_element(By.XPATH, "//span[contains(text(),'Localização')]/ancestor::div[@role='button']")
+            location_button.click()
+            time.sleep(2)
+
+            # Preenche o campo de localização com "Indaial"
+            location_input = driver.find_element(By.XPATH, "//input[@placeholder='Pesquise por cidade, bairro ou código postal.']")
+            location_input.clear()
+            location_input.send_keys("Indaial")
+            time.sleep(2)
+            location_input.send_keys(u'\ue007')  # Pressiona Enter
+            time.sleep(2)
+
+            # Seleciona o raio desejado
+            print(f"Selecionando raio: {radius} km")
+            radius_dropdown = driver.find_element(By.XPATH, "//select[contains(@aria-label, 'Raio')]")
+            radius_dropdown.click()
+            time.sleep(1)
+            from selenium.webdriver.support.ui import Select
+            select = Select(radius_dropdown)
+            select.select_by_visible_text(f"{radius} quilômetro" if radius == "1" else f"{radius} quilômetros")
+            time.sleep(1)
+
+            # Clica no botão "Aplicar"
+            apply_button = driver.find_element(By.XPATH, "//div[@aria-label='Aplicar']")
+            apply_button.click()
+            time.sleep(5)
+        except Exception as e:
+            print(f"Erro ao selecionar localização/raio: {e}")
 
         for _ in range(3):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")

@@ -2,18 +2,23 @@ import { useState } from 'react';
 
 function App() {
   const [query, setQuery] = useState('');
-  const [minPrice, setMinPrice] = useState('');
+  const [minPrice, setMinPrice] = useState('0');
   const [maxPrice, setMaxPrice] = useState('');
-  const [daysSinceListed, setDaysSinceListed] = useState('');
+  const [daysSinceListed, setDaysSinceListed] = useState('1');
+  const [radius, setRadius] = useState('20');
   const [anuncios, setAnuncios] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Não envie maxPrice se estiver vazio
+    const payload = { query, minPrice, daysSinceListed, radius };
+    if (maxPrice) payload.maxPrice = maxPrice;
+
     const response = await fetch('http://localhost:5000/scrape', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, minPrice, maxPrice, daysSinceListed }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
@@ -40,24 +45,46 @@ function App() {
           onChange={e => setQuery(e.target.value)}
           style={inputStyle}
         />
-        <input
-          placeholder="Preço mínimo"
+        <select
           value={minPrice}
           onChange={e => setMinPrice(e.target.value)}
           style={inputStyle}
-        />
+        >
+          <option value="0">Preço mínimo: 0</option>
+          <option value="1000">Preço mínimo: 1000</option>
+          <option value="2000">Preço mínimo: 2000</option>
+          <option value="5000">Preço mínimo: 5000</option>
+          <option value="10000">Preço mínimo: 10000</option>
+        </select>
         <input
-          placeholder="Preço máximo"
+          placeholder="Preço máximo (opcional)"
           value={maxPrice}
           onChange={e => setMaxPrice(e.target.value)}
           style={inputStyle}
         />
-        <input
-          placeholder="Dias desde publicação"
+        <select
           value={daysSinceListed}
           onChange={e => setDaysSinceListed(e.target.value)}
           style={inputStyle}
-        />
+        >
+          <option value="1">Últimos 1 dia</option>
+          <option value="2">Últimos 2 dias</option>
+          <option value="3">Últimos 3 dias</option>
+          <option value="7">Últimos 7 dias</option>
+        </select>
+        <select
+          value={radius}
+          onChange={e => setRadius(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="20">20 km</option>
+          <option value="40">40 km</option>
+          <option value="60">60 km</option>
+          <option value="80">80 km</option>
+          <option value="100">100 km</option>
+          <option value="150">150 km</option>
+          <option value="200">200 km</option>
+        </select>
         <button type="submit" style={buttonStyle}>Buscar</button>
       </form>
 
