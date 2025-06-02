@@ -164,9 +164,9 @@ def scrape():
                 link = card.get_attribute("href")
                 texto = card.text.split("\n")
 
-                # Valores padrão
-                titulo = texto[0] if len(texto) > 0 else "Sem título"
-                preco = texto[1] if len(texto) > 1 else "Sem preço"
+                # Corrigido: titulo e preco
+                preco = texto[0] if len(texto) > 0 else "Sem preço"
+                titulo = texto[1] if len(texto) > 1 else "Sem título"
                 local = texto[2] if len(texto) > 2 else "Localização não informada"
 
                 # Tenta pegar imagem de fundo (estilo background-image)

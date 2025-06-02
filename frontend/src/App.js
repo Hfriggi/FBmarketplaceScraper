@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 function App() {
   const [query, setQuery] = useState('');
@@ -7,9 +7,12 @@ function App() {
   const [daysSinceListed, setDaysSinceListed] = useState('1');
   const [radius, setRadius] = useState('20');
   const [anuncios, setAnuncios] = useState([]);
+  const [sortOrder, setSortOrder] = useState('none');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // Não envie maxPrice se estiver vazio
     const payload = { query, minPrice, daysSinceListed, radius };
@@ -23,7 +26,46 @@ function App() {
 
     const data = await response.json();
     setAnuncios(data.resultados || []);
+    setLoading(false);
   };
+
+  // Função para extrair número do preço (ex: "R$ 1.234" => 1234)
+  function parsePreco(preco) {
+    if (!preco) return NaN;
+    // Remove pontos e espaços, depois pega apenas números
+    const num = preco.replace(/\./g, '').replace(/[^\d]/g, '');
+    return num ? parseInt(num, 10) : NaN;
+  }
+
+  // Função para extrair UF do campo localizacao
+  function getUF(localizacao) {
+    if (!localizacao) return '';
+    const partes = localizacao.split(',');
+    if (partes.length < 2) return '';
+    const uf = partes[partes.length - 1].trim();
+    return uf.slice(-2).toUpperCase();
+  }
+
+  // Ordenação global: SC primeiro, depois ordenação por preço se selecionado
+  const anunciosOrdenados = useMemo(() => {
+    const arr = [...anuncios];
+    arr.sort((a, b) => {
+      // SC sempre primeiro
+      const ufA = getUF(a.localizacao);
+      const ufB = getUF(b.localizacao);
+      if (ufA === 'SC' && ufB !== 'SC') return -1;
+      if (ufA !== 'SC' && ufB === 'SC') return 1;
+      // Ambos SC ou ambos não SC, ordena por preço se necessário
+      if (sortOrder === 'asc') {
+        return parsePreco(a.preco) - parsePreco(b.preco);
+      }
+      if (sortOrder === 'desc') {
+        return parsePreco(b.preco) - parsePreco(a.preco);
+      }
+      return 0;
+    });
+    return arr;
+  }, [anuncios, sortOrder]);
 
   return (
     <div style={{
@@ -85,8 +127,41 @@ function App() {
           <option value="150">150 km</option>
           <option value="200">200 km</option>
         </select>
-        <button type="submit" style={buttonStyle}>Buscar</button>
+        <button type="submit" style={buttonStyle} disabled={loading}>
+          {loading ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  border: '3px solid #fff',
+                  borderTop: '3px solid #81c784',
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  marginRight: '8px',
+                  animation: 'spin 1s linear infinite'
+                }}
+              />
+              Buscando...
+            </span>
+          ) : (
+            'Buscar'
+          )}
+        </button>
       </form>
+
+      <div style={{ width: '300px', margin: '20px 0 0 0' }}>
+        <label style={{ color: '#fff', marginRight: '10px' }}>Ordenar por preço:</label>
+        <select
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="none">Sem ordenação</option>
+          <option value="asc">Menor preço</option>
+          <option value="desc">Maior preço</option>
+        </select>
+      </div>
 
       <hr style={{
         margin: '40px 0',
@@ -96,7 +171,7 @@ function App() {
 
       <h2>Resultados:</h2>
       <ul style={{ width: '100%', maxWidth: '900px', paddingLeft: '0px' }}>
-        {anuncios.map((a, index) => {
+        {anunciosOrdenados.map((a, index) => {
           const [cidade, distancia] = (a.localizacao || '').split('·').map(s => s.trim());
 
           return (
@@ -135,6 +210,7 @@ function App() {
                     {a.titulo}
                   </a>
                   <div style={{ fontSize: '16px', marginTop: '6px' }}>
+                    {/* Valor ao lado do emoji */}
                     💰 <strong>{a.preco}</strong> <br />
                     📍 {cidade || 'Localização não informada'} <br />
                   </div>
@@ -145,6 +221,15 @@ function App() {
           );
         })}
       </ul>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+        `}
+      </style>
     </div>
   );
 }
