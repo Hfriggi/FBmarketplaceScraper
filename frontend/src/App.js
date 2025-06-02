@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 
 function App() {
   const [query, setQuery] = useState('');
-  const [minPrice, setMinPrice] = useState('0');
+  const [minPrice, setMinPrice] = useState('gratuito');
   const [maxPrice, setMaxPrice] = useState('');
   const [daysSinceListed, setDaysSinceListed] = useState('1');
   const [radius, setRadius] = useState('20');
@@ -15,7 +15,9 @@ function App() {
     setLoading(true);
 
     // Não envie maxPrice se estiver vazio
-    const payload = { query, minPrice, daysSinceListed, radius };
+    // Não envie minPrice se for "gratuito"
+    const payload = { query, daysSinceListed, radius };
+    if (minPrice !== 'gratuito') payload.minPrice = minPrice;
     if (maxPrice) payload.maxPrice = maxPrice;
 
     const response = await fetch('http://localhost:5000/scrape', {
@@ -92,7 +94,8 @@ function App() {
           onChange={e => setMinPrice(e.target.value)}
           style={inputStyle}
         >
-          <option value="0">Preço mínimo: 0</option>
+          <option value="gratuito">Gratuito</option>
+          <option value="50">Preço mínimo: 50</option>
           <option value="1000">Preço mínimo: 1000</option>
           <option value="2000">Preço mínimo: 2000</option>
           <option value="5000">Preço mínimo: 5000</option>

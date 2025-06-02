@@ -41,16 +41,22 @@ def is_logged_in(driver):
 def scrape():
     data = request.json
     query = data.get('query', '')
-    min_price = data.get('minPrice', '0')
+    min_price = data.get('minPrice', '')
     max_price = data.get('maxPrice', '')
     days = data.get('daysSinceListed', '1')
     radius = data.get('radius', '20')  # valor padrão 20km
 
     # Monta a URL apenas com os filtros necessários
-    url = f"https://www.facebook.com/marketplace/104032612966151/search?minPrice={min_price}"
+    url = "https://www.facebook.com/marketplace/104032612966151/search?"
+    params = []
+    if min_price and min_price != 'gratuito':
+        params.append(f"minPrice={min_price}")
     if max_price:
-        url += f"&maxPrice={max_price}"
-    url += f"&daysSinceListed={days}&query={query}&exact=false"
+        params.append(f"maxPrice={max_price}")
+    params.append(f"daysSinceListed={days}")
+    params.append(f"query={query}")
+    params.append("exact=false")
+    url += "&".join(params)
 
     options = Options()
     options.add_argument("--disable-gpu")
@@ -136,7 +142,8 @@ def scrape():
         except Exception as e:
             print(f"Erro ao selecionar localização/raio: {e}")
 
-        for _ in range(3):
+        # Role a página para baixo para carregar mais anúncios (agora 10 vezes)
+        for _ in range(10):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
 
