@@ -68,14 +68,55 @@ function App() {
       }} />
 
       <h2>Resultados:</h2>
-      <ul style={{ width: '300px', paddingLeft: '20px' }}>
-        {anuncios.map((a, index) => (
-          <li key={index} style={{ marginBottom: '10px' }}>
-            <a href={a.link} target="_blank" rel="noreferrer" style={{ color: '#81c784' }}>
-              {a.titulo}
-            </a> - {a.preco}
-          </li>
-        ))}
+      <ul style={{ width: '100%', maxWidth: '900px', paddingLeft: '0px' }}>
+        {anuncios.map((a, index) => {
+          const [cidade, distancia] = (a.localizacao || '').split('·').map(s => s.trim());
+
+          return (
+            <li key={index} style={{ marginBottom: '20px', listStyle: 'none' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+                backgroundColor: '#2e2c2b',
+                padding: '12px',
+                borderRadius: '8px'
+              }}>
+                {/* Imagem */}
+                {a.imagem && (
+                  <img
+                    src={a.imagem}
+                    alt="Imagem do anúncio"
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      backgroundColor: '#ccc',
+                    }}
+                  />
+                )}
+
+                {/* Conteúdo */}
+                <div style={{ flex: 1 }}>
+                  <a
+                    href={a.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: '#81c784', fontWeight: 'bold', fontSize: '18px', textDecoration: 'none' }}
+                  >
+                    {a.titulo}
+                  </a>
+                  <div style={{ fontSize: '16px', marginTop: '6px' }}>
+                    💰 <strong>{a.preco}</strong> <br />
+                    📍 {cidade || 'Localização não informada'} <br />
+                  </div>
+                </div>
+              </div>
+              <hr style={{ marginTop: '12px', border: '0.5px solid #222' }} />
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
