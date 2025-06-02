@@ -1,0 +1,20 @@
+# Dependências do Node (npm)
+node_modules/
+
+# Dependências do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+
+# Arquivos de ambiente
+.env
+.env.local
+
+# Outros
+dist/
+build/
+*.egg-info/
