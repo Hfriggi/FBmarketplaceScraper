@@ -13,6 +13,8 @@ venv/
 # Arquivos de ambiente
 .env
 .env.local
+backend/brightdata_api_key.txt
+backend/docs/
 
 # Outros
 dist/
