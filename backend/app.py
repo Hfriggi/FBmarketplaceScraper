@@ -206,4 +206,4 @@ def scrape():
         return jsonify({"erro": "Erro inesperado ao acessar o Facebook ou Marketplace."}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
