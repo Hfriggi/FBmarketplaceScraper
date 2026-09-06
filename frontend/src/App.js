@@ -19,7 +19,7 @@ function App() {
 
     // Não envie maxPrice se estiver vazio
     // Não envie minPrice se for "gratuito"
-    const payload = { query, daysSinceListed, radius, baseLocation };
+    const payload = { query, daysSinceListed, radius, baseLocation, limit: 50 };
     if (minPrice !== 'gratuito') payload.minPrice = minPrice;
     if (maxPrice) payload.maxPrice = maxPrice;
 
@@ -241,6 +241,14 @@ function App() {
                     💰 <strong>{a.preco}</strong> <br />
                     📍 {cidade || 'Localização não informada'} <br />
                   </div>
+                  <details style={{ marginTop: '10px' }}>
+                    <summary style={{ cursor: 'pointer', color: '#b8dabb' }}>
+                      Ver descrição
+                    </summary>
+                    <p style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                      {a.descricao || 'Descrição não informada.'}
+                    </p>
+                  </details>
                 </div>
               </div>
               <hr style={{ marginTop: '12px', border: '0.5px solid #222' }} />

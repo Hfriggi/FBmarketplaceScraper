@@ -42,7 +42,7 @@ Set-ExecutionPolicy -Scope Process Bypass
   "sortBy": "newest",
   "deliveryMethod": "local_pick_up",
   "exact": false,
-  "limit": 20
+  "limit": 50
 }
 ```
 

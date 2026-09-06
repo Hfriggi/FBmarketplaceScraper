@@ -129,7 +129,7 @@ def parse_filters(payload):
         payload.get("radius"), "radius", default=20, minimum=1, maximum=500
     )
     limit = parse_integer(
-        payload.get("limit"), "limit", default=20, minimum=1, maximum=50
+        payload.get("limit"), "limit", default=50, minimum=1, maximum=50
     )
 
     sort = str(payload.get("sortBy", "newest")).strip().lower()
@@ -339,6 +339,7 @@ def normalize_and_filter(rows, filters):
                 "localizacao": row.get("location") or "Localização não informada",
                 "dataPublicacao": row.get("listing_date"),
                 "condicao": row.get("condition"),
+                "descricao": row.get("description") or "Descrição não informada.",
                 "distanciaKm": None,
             }
         )
