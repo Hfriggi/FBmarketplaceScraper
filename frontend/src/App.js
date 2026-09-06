@@ -6,29 +6,39 @@ function App() {
   const [maxPrice, setMaxPrice] = useState('');
   const [daysSinceListed, setDaysSinceListed] = useState('1');
   const [radius, setRadius] = useState('20');
+  const [baseLocation, setBaseLocation] = useState('indaial');
   const [anuncios, setAnuncios] = useState([]);
   const [sortOrder, setSortOrder] = useState('none');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     // Não envie maxPrice se estiver vazio
     // Não envie minPrice se for "gratuito"
-    const payload = { query, daysSinceListed, radius };
+    const payload = { query, daysSinceListed, radius, baseLocation };
     if (minPrice !== 'gratuito') payload.minPrice = minPrice;
     if (maxPrice) payload.maxPrice = maxPrice;
 
-    const response = await fetch('http://localhost:5000/scrape', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch('http://localhost:5000/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await response.json();
-    setAnuncios(data.resultados || []);
-    setLoading(false);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.erro || 'Erro ao buscar anúncios.');
+      setAnuncios(data.resultados || []);
+    } catch (err) {
+      setAnuncios([]);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Função para extrair número do preço (ex: "R$ 1.234" => 1234)
@@ -89,6 +99,14 @@ function App() {
           onChange={e => setQuery(e.target.value)}
           style={inputStyle}
         />
+        <select
+          value={baseLocation}
+          onChange={e => setBaseLocation(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="indaial">Base: Indaial, SC</option>
+          <option value="blumenau">Base: Blumenau, SC</option>
+        </select>
         <select
           value={minPrice}
           onChange={e => setMinPrice(e.target.value)}
@@ -152,6 +170,12 @@ function App() {
           )}
         </button>
       </form>
+
+      {error && (
+        <div style={{ width: '300px', color: '#ffb4ab', marginTop: '12px' }}>
+          {error}
+        </div>
+      )}
 
       <div style={{ width: '300px', margin: '20px 0 0 0' }}>
         <label style={{ color: '#fff', marginRight: '10px' }}>Ordenar por preço:</label>

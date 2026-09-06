@@ -1,0 +1,6 @@
+brightdata_api_key.txt
+facebook_cookies.json
+docs/
+venv/
+__pycache__/
+*.pyc
